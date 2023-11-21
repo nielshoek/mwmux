@@ -87,7 +87,7 @@ func (m *CustomMux) Handle(p string, h http.Handler) {
 }
 
 // Registers middleware
-func (m *CustomMux) Use(path string, h func(http.ResponseWriter, *http.Request, *MyHandlerFunc)) {
+func (m *CustomMux) Use(path string, h func(http.ResponseWriter, *http.Request, http.HandlerFunc)) {
 	if mws, ok := m.Middlewares[path]; ok {
 		mws = append(mws, h)
 		m.Middlewares[path] = mws
@@ -153,7 +153,7 @@ func createMiddlewarePipeline(w http.ResponseWriter, r *http.Request, hs []MyHan
 	// 3. Return the beginning func
 	next := func(w http.ResponseWriter, r *http.Request) {} // Fake endpoint handler
 
-	for i := len(hs); i >= 0; i-- {
+	for i := len(hs) - 1; i >= 0; i-- {
 		next = createFunc(hs[i], next)
 	}
 
