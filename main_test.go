@@ -62,7 +62,7 @@ func Test_BasicMiddleware_RunsOneHandlerFuncAndEndpointHandler(t *testing.T) {
 
 	// Assert
 	if !reflect.DeepEqual(hitPaths, expectedHitPaths) {
-		t.Errorf("Expected hitPaths to contain path '%v'", middlewarePath)
+		t.Errorf("Expected %v, but found %v", expectedHitPaths, hitPaths)
 	}
 }
 

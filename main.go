@@ -17,19 +17,21 @@ var MWSigs map[string]Void = make(map[string]Void)
 func main() {
 	MyMux = NewMyMux()
 
-	// MyMux.Use("/", func(w http.ResponseWriter, r *http.Request) {
-	// 	fmt.Println("/")
-	// })
+	MyMux.Use("/", func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+		fmt.Println("middleware/")
+		n(w, r)
+	})
 
-	// MyMux.Use("/hey", func(w http.ResponseWriter, r *http.Request) {
-	// 	fmt.Println("HEY")
-	// })
+	MyMux.Use("/hey", func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+		fmt.Println("MIDDLEWARE HEY")
+		n(w, r)
+	})
 
 	// MyMux.Use("/hi", func(w http.ResponseWriter, r *http.Request) {
 	// 	fmt.Println("HI")
 	// })
 
-	MyMux.Handle("/", &MyHandler{})
+	MyMux.Handle("/hey", &MyHandler{})
 
 	http.ListenAndServe(":4321", MyMux.mux)
 }
@@ -37,10 +39,17 @@ func main() {
 type MyHandler struct {
 }
 
-func (h *MyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+type EndpointHandler struct{}
+
+func (h *EndpointHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("SERVE SERVE SERVE SERVE SERVE SERVE SERVE SERVE SERVE")
+	w.Write([]byte("ENDPOINT"))
+}
+
+func runMiddlewarePipeline(w http.ResponseWriter, r *http.Request) {
 	requestPath := r.URL.Path
 
-	// Check all middlewares
+	// Get all middlewares registered on request route
 	middlewareHandlers := make([]MyHandlerFunc, 0)
 	for middlewarePath, handlers := range MyMux.Middlewares {
 		idSpecifiers := getIdSpecifiers(middlewarePath)
@@ -61,10 +70,32 @@ func (h *MyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+
 	// Create middleware pipeline
 	firstMiddleware := createMiddlewarePipeline(w, r, middlewareHandlers)
 	firstMiddleware(w, r)
+}
 
+var endpointHandler func(w http.ResponseWriter, r *http.Request)
+
+func (h *MyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	pathSegments := strings.Split(r.URL.Path, "/")
+	path := pathSegments[len(pathSegments)-1]
+	// var endpointHandler func(w http.ResponseWriter, r *http.Request)
+	if path == "hey" {
+		endpointHandler = hey
+	} else if path == "hi" {
+		endpointHandler = hi
+	}
+	runMiddlewarePipeline(w, r)
+}
+
+func hey(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("endpoint hey"))
+}
+
+func hi(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("endpoint hi"))
 }
 
 type CustomMux struct {
@@ -114,6 +145,11 @@ type Void struct{}
 func getIdSpecifiers(s string) []int {
 	result := make([]int, 0)
 	parts := strings.Split(s, "/")[1:]
+
+	if parts[len(parts)-1] == "" {
+		parts = parts[:len(parts)-1]
+	}
+
 	for i, part := range parts {
 		if part[0] == '{' && part[len(part)-1] == '}' {
 			result = append(result, i)
@@ -148,7 +184,7 @@ func createMiddlewarePipeline(w http.ResponseWriter, r *http.Request, hs []MyHan
 	// 2. Iterate through the handlers from end to begin wrapping the created
 	//	  func from last iteration until the begin.
 	// 3. Return the beginning func
-	next := func(w http.ResponseWriter, r *http.Request) {} // Fake endpoint handler
+	next := endpointHandler // Fake endpoint handler
 
 	for i := len(hs) - 1; i >= 0; i-- {
 		next = createFunc(hs[i], next)
