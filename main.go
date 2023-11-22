@@ -64,10 +64,7 @@ func (h *MyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Create middleware pipeline
 	firstMiddleware := createMiddlewarePipeline(w, r, middlewareHandlers)
 	firstMiddleware(w, r)
-	// for _, mwh := range middlewareHandlers {
-	// 	mwh(w, r, nil)
-	// 	fmt.Println(mwh)
-	// }
+
 }
 
 type CustomMux struct {

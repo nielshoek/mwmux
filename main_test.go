@@ -34,6 +34,38 @@ func Test_BasicMiddleware_RunsOneHandlerFunc(t *testing.T) {
 	}
 }
 
+func Test_BasicMiddleware_RunsOneHandlerFuncAndEndpointHandler(t *testing.T) {
+	// Arrange
+	myHandler := &MyHandler{}
+	MyMux = newTestMux(myHandler)
+
+	hitPaths := make(map[string]Void)
+
+	MyMux.mux.HandleFunc("/a", func(w http.ResponseWriter, r *http.Request) {
+		hitPaths["endpoint"] = Void{}
+	})
+
+	requestPath := "/a"
+	middlewarePath := "/a"
+	MyMux.Use(middlewarePath, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+		hitPaths[middlewarePath] = Void{}
+	})
+
+	expectedHitPaths := make(map[string]Void)
+	expectedHitPaths["endpoint"] = Void{}
+	expectedHitPaths[middlewarePath] = Void{}
+
+	// Act
+	request, _ := http.NewRequest(http.MethodGet, requestPath, nil)
+	response := httptest.NewRecorder()
+	myHandler.ServeHTTP(response, request)
+
+	// Assert
+	if !reflect.DeepEqual(hitPaths, expectedHitPaths) {
+		t.Errorf("Expected hitPaths to contain path '%v'", middlewarePath)
+	}
+}
+
 func Test_BasicMiddleware_DoesNotRun(t *testing.T) {
 	// Arrange
 	myHandler := &MyHandler{}
