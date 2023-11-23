@@ -9,8 +9,7 @@ import (
 
 func Test_BasicMiddleware_RunsOneHandlerFunc(t *testing.T) {
 	// Arrange
-	myHandler := &MyHandler{}
-	MyMux = newTestMux(myHandler)
+	MyMux = newTestMux()
 
 	hitPaths := make(map[string]Void)
 
@@ -26,7 +25,7 @@ func Test_BasicMiddleware_RunsOneHandlerFunc(t *testing.T) {
 	// Act
 	request, _ := http.NewRequest(http.MethodGet, requestPath, nil)
 	response := httptest.NewRecorder()
-	myHandler.ServeHTTP(response, request)
+	MyMux.ServeHTTP(response, request)
 
 	// Assert
 	if !reflect.DeepEqual(hitPaths, expectedHitPaths) {
@@ -36,8 +35,7 @@ func Test_BasicMiddleware_RunsOneHandlerFunc(t *testing.T) {
 
 func Test_BasicMiddleware_RunsOneHandlerFuncAndEndpointHandler(t *testing.T) {
 	// Arrange
-	myHandler := &MyHandler{}
-	MyMux = newTestMux(myHandler)
+	MyMux = newTestMux()
 
 	hitPaths := make(map[string]Void)
 
@@ -60,7 +58,7 @@ func Test_BasicMiddleware_RunsOneHandlerFuncAndEndpointHandler(t *testing.T) {
 	request, _ := http.NewRequest(http.MethodGet, requestPath, nil)
 	response := httptest.NewRecorder()
 
-	MyMux.mux.ServeHTTP(response, request)
+	MyMux.ServeHTTP(response, request)
 
 	// Assert
 	if !reflect.DeepEqual(hitPaths, expectedHitPaths) {
@@ -70,8 +68,7 @@ func Test_BasicMiddleware_RunsOneHandlerFuncAndEndpointHandler(t *testing.T) {
 
 func Test_BasicMiddleware_DoesNotRun(t *testing.T) {
 	// Arrange
-	myHandler := &MyHandler{}
-	MyMux = newTestMux(myHandler)
+	MyMux = newTestMux()
 
 	hitPaths := make(map[string]Void)
 
@@ -86,7 +83,7 @@ func Test_BasicMiddleware_DoesNotRun(t *testing.T) {
 	// Act
 	request, _ := http.NewRequest(http.MethodGet, requestPath, nil)
 	response := httptest.NewRecorder()
-	myHandler.ServeHTTP(response, request)
+	MyMux.ServeHTTP(response, request)
 
 	// Assert
 	if !reflect.DeepEqual(hitPaths, expectedHitPaths) {
@@ -96,8 +93,7 @@ func Test_BasicMiddleware_DoesNotRun(t *testing.T) {
 
 func Test_MiddlewareTwoLevelsDeep_RunsTwoHandlerFuncs(t *testing.T) {
 	// Arrange
-	myHandler := &MyHandler{}
-	MyMux = newTestMux(myHandler)
+	MyMux = newTestMux()
 
 	hitPaths := make(map[string]Void)
 
@@ -119,7 +115,7 @@ func Test_MiddlewareTwoLevelsDeep_RunsTwoHandlerFuncs(t *testing.T) {
 	// Act
 	request, _ := http.NewRequest(http.MethodGet, requestPath, nil)
 	response := httptest.NewRecorder()
-	myHandler.ServeHTTP(response, request)
+	MyMux.ServeHTTP(response, request)
 
 	// Assert
 	if !reflect.DeepEqual(hitPaths, expectedHitPaths) {
@@ -129,8 +125,7 @@ func Test_MiddlewareTwoLevelsDeep_RunsTwoHandlerFuncs(t *testing.T) {
 
 func Test_MiddlewareTwoLevelsDeep_RunsThreeHandlerFuncs(t *testing.T) {
 	// Arrange
-	myHandler := &MyHandler{}
-	MyMux = newTestMux(myHandler)
+	MyMux = newTestMux()
 
 	hitPaths := make(map[string]int)
 
@@ -156,7 +151,7 @@ func Test_MiddlewareTwoLevelsDeep_RunsThreeHandlerFuncs(t *testing.T) {
 	// Act
 	request, _ := http.NewRequest(http.MethodGet, requestPath, nil)
 	response := httptest.NewRecorder()
-	myHandler.ServeHTTP(response, request)
+	MyMux.ServeHTTP(response, request)
 
 	// Assert
 	if !reflect.DeepEqual(hitPaths, expectedHitPaths) {
@@ -166,8 +161,7 @@ func Test_MiddlewareTwoLevelsDeep_RunsThreeHandlerFuncs(t *testing.T) {
 
 func Test_MiddlewareTwoLevelsDeepWithId_RunsHandlerFunc(t *testing.T) {
 	// Arrange
-	myHandler := &MyHandler{}
-	MyMux = newTestMux(myHandler)
+	MyMux = newTestMux()
 
 	hitPaths := make(map[string]int)
 
@@ -183,7 +177,7 @@ func Test_MiddlewareTwoLevelsDeepWithId_RunsHandlerFunc(t *testing.T) {
 	// Act
 	request, _ := http.NewRequest(http.MethodGet, requestPath, nil)
 	response := httptest.NewRecorder()
-	myHandler.ServeHTTP(response, request)
+	MyMux.ServeHTTP(response, request)
 
 	// Assert
 	if !reflect.DeepEqual(hitPaths, expectedHitPaths) {
@@ -193,8 +187,7 @@ func Test_MiddlewareTwoLevelsDeepWithId_RunsHandlerFunc(t *testing.T) {
 
 func Test_MiddlewareTwoLevelsDeepWithId_RunsOneHandlerFunc(t *testing.T) {
 	// Arrange
-	myHandler := &MyHandler{}
-	MyMux = newTestMux(myHandler)
+	MyMux = newTestMux()
 
 	hitPaths := make(map[string]int)
 
@@ -214,7 +207,7 @@ func Test_MiddlewareTwoLevelsDeepWithId_RunsOneHandlerFunc(t *testing.T) {
 	// Act
 	request, _ := http.NewRequest(http.MethodGet, requestPath, nil)
 	response := httptest.NewRecorder()
-	myHandler.ServeHTTP(response, request)
+	MyMux.ServeHTTP(response, request)
 
 	// Assert
 	if !reflect.DeepEqual(hitPaths, expectedHitPaths) {
@@ -224,8 +217,7 @@ func Test_MiddlewareTwoLevelsDeepWithId_RunsOneHandlerFunc(t *testing.T) {
 
 func Test_MiddlewareTwoLevelsDeepWithId_RunsTwoHandlerFuncs(t *testing.T) {
 	// Arrange
-	myHandler := &MyHandler{}
-	MyMux = newTestMux(myHandler)
+	MyMux = newTestMux()
 
 	hitPaths := make(map[string]int)
 
@@ -238,6 +230,7 @@ func Test_MiddlewareTwoLevelsDeepWithId_RunsTwoHandlerFuncs(t *testing.T) {
 	middlewarePathTwo := "/a/{id}/b/{id}"
 	MyMux.Use(middlewarePathTwo, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths[middlewarePathTwo] = 1
+		n(w, r)
 	})
 
 	expectedHitPaths := make(map[string]int)
@@ -247,7 +240,7 @@ func Test_MiddlewareTwoLevelsDeepWithId_RunsTwoHandlerFuncs(t *testing.T) {
 	// Act
 	request, _ := http.NewRequest(http.MethodGet, requestPath, nil)
 	response := httptest.NewRecorder()
-	myHandler.ServeHTTP(response, request)
+	MyMux.ServeHTTP(response, request)
 
 	// Assert
 	if !reflect.DeepEqual(hitPaths, expectedHitPaths) {
@@ -339,12 +332,11 @@ func Test_RemovePartsFromPath_RemovesNothing(t *testing.T) {
 	}
 }
 
-func newTestMux(h *MyHandler) *CustomMux {
+func newTestMux() *CustomMux {
 	customMux := &CustomMux{
 		mux:         &http.ServeMux{},
 		Middlewares: map[string][]MyHandlerFunc{},
 	}
-	customMux.Handle("/", h)
 
 	return customMux
 }

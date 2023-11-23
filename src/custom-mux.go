@@ -62,6 +62,10 @@ func (h *HandlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	runMiddlewarePipeline(w, r, h.handler.ServeHTTP)
 }
 
+func (cm *CustomMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	runMiddlewarePipeline(w, r, cm.mux.ServeHTTP)
+}
+
 func (m *CustomMux) Handle(p string, h http.Handler) {
 	handlerWrapper := &HandlerWrapper{
 		handler: h,
