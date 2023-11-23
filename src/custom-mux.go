@@ -87,13 +87,9 @@ func (m *CustomMux) ListenAndServe(addr string) error {
 // Register middleware
 func (m *CustomMux) Use(path string, h func(http.ResponseWriter, *http.Request, http.HandlerFunc)) {
 	if mws, ok := m.Middlewares[path]; ok {
-		mws = append(mws, h)
-		m.Middlewares[path] = mws
+		m.Middlewares[path] = append(mws, h)
 	} else {
-		m.Middlewares[path] = []MyHandlerFunc{}
-		mws := m.Middlewares[path]
-		mws = append(mws, h)
-		m.Middlewares[path] = mws
+		m.Middlewares[path] = []MyHandlerFunc{h}
 	}
 }
 
