@@ -41,7 +41,7 @@ func Test_BasicMiddleware_RunsOneHandlerFuncAndEndpointHandler(t *testing.T) {
 
 	hitPaths := make(map[string]Void)
 
-	MyMux.mux.HandleFunc("/a", func(w http.ResponseWriter, r *http.Request) {
+	MyMux.HandleFunc("/a", func(w http.ResponseWriter, r *http.Request) {
 		hitPaths["endpoint"] = Void{}
 	})
 
@@ -49,6 +49,7 @@ func Test_BasicMiddleware_RunsOneHandlerFuncAndEndpointHandler(t *testing.T) {
 	middlewarePath := "/a"
 	MyMux.Use(middlewarePath, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths[middlewarePath] = Void{}
+		n(w, r)
 	})
 
 	expectedHitPaths := make(map[string]Void)
@@ -58,7 +59,8 @@ func Test_BasicMiddleware_RunsOneHandlerFuncAndEndpointHandler(t *testing.T) {
 	// Act
 	request, _ := http.NewRequest(http.MethodGet, requestPath, nil)
 	response := httptest.NewRecorder()
-	myHandler.ServeHTTP(response, request)
+
+	MyMux.mux.ServeHTTP(response, request)
 
 	// Assert
 	if !reflect.DeepEqual(hitPaths, expectedHitPaths) {

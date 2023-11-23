@@ -46,7 +46,7 @@ func (h *EndpointHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("ENDPOINT"))
 }
 
-func runMiddlewarePipeline(w http.ResponseWriter, r *http.Request) {
+func runMiddlewarePipeline(w http.ResponseWriter, r *http.Request, eh http.HandlerFunc) {
 	requestPath := r.URL.Path
 
 	// Get all middlewares registered on request route
@@ -72,22 +72,22 @@ func runMiddlewarePipeline(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create middleware pipeline
-	firstMiddleware := createMiddlewarePipeline(w, r, middlewareHandlers)
+	firstMiddleware := createMiddlewarePipeline(middlewareHandlers, eh)
 	firstMiddleware(w, r)
 }
-
-var endpointHandler func(w http.ResponseWriter, r *http.Request)
 
 func (h *MyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	pathSegments := strings.Split(r.URL.Path, "/")
 	path := pathSegments[len(pathSegments)-1]
-	// var endpointHandler func(w http.ResponseWriter, r *http.Request)
+	var endpointHandler func(w http.ResponseWriter, r *http.Request)
 	if path == "hey" {
 		endpointHandler = hey
 	} else if path == "hi" {
 		endpointHandler = hi
+	} else {
+		endpointHandler = func(w http.ResponseWriter, r *http.Request) {}
 	}
-	runMiddlewarePipeline(w, r)
+	runMiddlewarePipeline(w, r, endpointHandler)
 }
 
 func hey(w http.ResponseWriter, r *http.Request) {
@@ -112,6 +112,13 @@ func NewMyMux() *CustomMux {
 
 func (m *CustomMux) Handle(p string, h http.Handler) {
 	m.mux.Handle(p, h)
+}
+
+func (m *CustomMux) HandleFunc(p string, handler func(http.ResponseWriter, *http.Request)) {
+	funcWrapper := func(w http.ResponseWriter, r *http.Request) {
+		runMiddlewarePipeline(w, r, handler)
+	}
+	m.mux.HandleFunc(p, funcWrapper)
 }
 
 // Registers middleware
@@ -179,12 +186,12 @@ func removePartsFromPath(path string, positions []int) string {
 	return result
 }
 
-func createMiddlewarePipeline(w http.ResponseWriter, r *http.Request, hs []MyHandlerFunc) http.HandlerFunc {
+func createMiddlewarePipeline(hs []MyHandlerFunc, eh http.HandlerFunc) http.HandlerFunc {
 	// 1. Get the endpoint handler
 	// 2. Iterate through the handlers from end to begin wrapping the created
 	//	  func from last iteration until the begin.
 	// 3. Return the beginning func
-	next := endpointHandler // Fake endpoint handler
+	next := eh
 
 	for i := len(hs) - 1; i >= 0; i-- {
 		next = createFunc(hs[i], next)
