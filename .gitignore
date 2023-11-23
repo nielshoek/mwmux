@@ -18,4 +18,4 @@
 go.work
 
 # Air (Live reload utility)
-/tmp
+example/tmp
