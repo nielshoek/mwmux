@@ -7,5 +7,6 @@ Simple and small utility to register middleware in the same way as in Express.js
 - [x] Middleware pipeline (`next func`)
 - [x] Invocation of actual action / handler
 - [ ] Tests that check order of function invocation
+- [ ] GitHub Actions
 - [ ] Cleanup / Refactor
-
+- [ ] Release package
