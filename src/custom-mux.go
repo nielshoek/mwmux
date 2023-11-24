@@ -15,7 +15,28 @@ var MyMux *CustomMux
 func runMiddlewarePipeline(writer http.ResponseWriter, request *http.Request, eh http.HandlerFunc) {
 	requestPath := request.URL.Path
 
-	// Get all middlewares registered on request route
+	middlewareHandlers := getMiddlewaresForPath(requestPath)
+
+	sortedMiddlewareHandlers := sortMiddlewares(middlewareHandlers)
+
+	firstMiddleware := createMiddlewarePipeline(sortedMiddlewareHandlers, eh)
+	firstMiddleware(writer, request)
+}
+
+func sortMiddlewares(middlewareHandlers map[int]MyHandlerFunc) []MyHandlerFunc {
+	sortedMiddlewareHandlers := make([]MyHandlerFunc, 0, len(middlewareHandlers))
+	keys := make([]int, 0, len(middlewareHandlers))
+	for k := range middlewareHandlers {
+		keys = append(keys, k)
+	}
+	slices.Sort(keys)
+	for _, k := range keys {
+		sortedMiddlewareHandlers = append(sortedMiddlewareHandlers, middlewareHandlers[k])
+	}
+	return sortedMiddlewareHandlers
+}
+
+func getMiddlewaresForPath(requestPath string) map[int]MyHandlerFunc {
 	middlewareHandlers := make(map[int]MyHandlerFunc, 0)
 	for middlewarePath, handlers := range MyMux.Middlewares {
 		idSpecifiers := getIdSpecifiers(middlewarePath)
@@ -38,21 +59,7 @@ func runMiddlewarePipeline(writer http.ResponseWriter, request *http.Request, eh
 			}
 		}
 	}
-
-	// Sort middleware handlers
-	sortedMiddlewareHandlers := make([]MyHandlerFunc, 0, len(middlewareHandlers))
-	keys := make([]int, 0, len(middlewareHandlers))
-	for k := range middlewareHandlers {
-		keys = append(keys, k)
-	}
-	slices.Sort(keys)
-	for _, k := range keys {
-		sortedMiddlewareHandlers = append(sortedMiddlewareHandlers, middlewareHandlers[k])
-	}
-
-	// Create middleware pipeline and call start of pipeline
-	firstMiddleware := createMiddlewarePipeline(sortedMiddlewareHandlers, eh)
-	firstMiddleware(writer, request)
+	return middlewareHandlers
 }
 
 type CustomMux struct {

@@ -298,9 +298,10 @@ func Test_MiddlewareDifferentPaths_RunsFiveHandlerFuncsInOrder(t *testing.T) {
 
 	hitPaths := make([]uint8, 0)
 
-	requestPath := "/a/b"
+	requestPath := "/a/b/c"
 	middlewarePathOne := "/a"
 	middlewarePathTwo := "/a/b"
+	middlewarePathThree := "/a/b/c"
 	MyMux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths = append(hitPaths, 1)
 		n(w, r)
@@ -313,8 +314,12 @@ func Test_MiddlewareDifferentPaths_RunsFiveHandlerFuncsInOrder(t *testing.T) {
 		hitPaths = append(hitPaths, 3)
 		n(w, r)
 	})
+	MyMux.Use(middlewarePathThree, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+		hitPaths = append(hitPaths, 4)
+		n(w, r)
+	})
 
-	expectedHitPaths := []uint8{1, 2, 3}
+	expectedHitPaths := []uint8{1, 2, 3, 4}
 
 	// Act
 	request, _ := http.NewRequest(http.MethodGet, requestPath, nil)
