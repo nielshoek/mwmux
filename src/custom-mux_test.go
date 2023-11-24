@@ -416,10 +416,10 @@ func Test_RemovePartsFromPath_RemovesNothing(t *testing.T) {
 	}
 }
 
-func newTestMux() *CustomMux {
-	customMux := &CustomMux{
+func newTestMux() *CMux {
+	customMux := &CMux{
 		mux:         &http.ServeMux{},
-		Middlewares: map[string]map[int]MyHandlerFunc{},
+		Middlewares: map[string]map[int]MiddlewareFunc{},
 	}
 
 	return customMux

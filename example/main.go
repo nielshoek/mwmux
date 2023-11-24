@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	mux := cmux.NewMyMux()
+	mux := cmux.NewCMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Home"))
