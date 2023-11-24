@@ -12,11 +12,11 @@ const idPlaceholder = "<ID_PLACEHOLDER>"
 
 var MyMux *CustomMux
 
-func runMiddlewarePipeline(w http.ResponseWriter, r *http.Request, eh http.HandlerFunc) {
-	requestPath := r.URL.Path
+func runMiddlewarePipeline(writer http.ResponseWriter, request *http.Request, eh http.HandlerFunc) {
+	requestPath := request.URL.Path
 
 	// Get all middlewares registered on request route
-	middlewareHandlers := make([]MyHandlerFunc, 0)
+	middlewareHandlers := make(map[int]MyHandlerFunc, 0)
 	for middlewarePath, handlers := range MyMux.Middlewares {
 		idSpecifiers := getIdSpecifiers(middlewarePath)
 		if len(idSpecifiers) > 0 {
@@ -31,26 +31,40 @@ func runMiddlewarePipeline(w http.ResponseWriter, r *http.Request, eh http.Handl
 		for _, v := range paths {
 			isMatch = patternRgx.MatchString(v)
 			if isMatch {
-				middlewareHandlers = append(middlewareHandlers, handlers...)
+				for k, v := range handlers {
+					middlewareHandlers[k] = v
+				}
 				break
 			}
 		}
 	}
 
+	// Sort middleware handlers
+	sortedMiddlewareHandlers := make([]MyHandlerFunc, 0, len(middlewareHandlers))
+	keys := make([]int, 0, len(middlewareHandlers))
+	for k := range middlewareHandlers {
+		keys = append(keys, k)
+	}
+	slices.Sort(keys)
+	for _, k := range keys {
+		sortedMiddlewareHandlers = append(sortedMiddlewareHandlers, middlewareHandlers[k])
+	}
+
 	// Create middleware pipeline and call start of pipeline
-	firstMiddleware := createMiddlewarePipeline(middlewareHandlers, eh)
-	firstMiddleware(w, r)
+	firstMiddleware := createMiddlewarePipeline(sortedMiddlewareHandlers, eh)
+	firstMiddleware(writer, request)
 }
 
 type CustomMux struct {
-	mux         *http.ServeMux
-	Middlewares map[string][]MyHandlerFunc
+	middlewareCount int
+	mux             *http.ServeMux
+	Middlewares     map[string]map[int]MyHandlerFunc
 }
 
 func NewMyMux() *CustomMux {
 	MyMux = &CustomMux{
 		mux:         &http.ServeMux{},
-		Middlewares: map[string][]MyHandlerFunc{},
+		Middlewares: map[string]map[int]MyHandlerFunc{},
 	}
 
 	return MyMux
@@ -87,10 +101,12 @@ func (m *CustomMux) ListenAndServe(addr string) error {
 // Register middleware
 func (m *CustomMux) Use(path string, h func(http.ResponseWriter, *http.Request, http.HandlerFunc)) {
 	if mws, ok := m.Middlewares[path]; ok {
-		m.Middlewares[path] = append(mws, h)
+		mws[m.middlewareCount] = h
 	} else {
-		m.Middlewares[path] = []MyHandlerFunc{h}
+		m.Middlewares[path] = map[int]MyHandlerFunc{}
+		m.Middlewares[path][m.middlewareCount] = h
 	}
+	m.middlewareCount++
 }
 
 func getPaths(fullPath string) []string {

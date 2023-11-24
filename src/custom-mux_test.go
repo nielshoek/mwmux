@@ -143,6 +143,7 @@ func Test_MiddlewareTwoLevelsDeep_RunsThreeHandlerFuncs(t *testing.T) {
 	})
 	MyMux.Use(middlewarePathTwo, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths[middlewarePathTwo]++
+		n(w, r)
 	})
 
 	expectedHitPaths := make(map[string]int)
@@ -413,7 +414,7 @@ func Test_RemovePartsFromPath_RemovesNothing(t *testing.T) {
 func newTestMux() *CustomMux {
 	customMux := &CustomMux{
 		mux:         &http.ServeMux{},
-		Middlewares: map[string][]MyHandlerFunc{},
+		Middlewares: map[string]map[int]MyHandlerFunc{},
 	}
 
 	return customMux
