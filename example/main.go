@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	cmux "nellie/middleware/src"
 	"net/http"
+
+	cmux "github.com/MadNelis/go-middleware-lib/src"
 )
 
 func main() {

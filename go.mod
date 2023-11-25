@@ -1,3 +1,3 @@
-module nellie/middleware
-replace nellie/middleware => github.com/MadNelis/go-middleware-lib v0.1.0
+module github.com/MadNelis/go-middleware-lib
+
 go 1.21.3
