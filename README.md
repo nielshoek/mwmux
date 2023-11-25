@@ -6,7 +6,7 @@ Simple and small utility to register middleware in the same way as in Express.js
 ## Example
 ```go
 func main() {
-  // 1. Create a mux
+  // 1. Create a CMux
 	mux := cmux.NewCMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
