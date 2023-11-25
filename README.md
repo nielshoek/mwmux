@@ -33,6 +33,6 @@ func main() {
 - [x] Invocation of actual action / handler
 - [x] Tests that check order of function invocation
 - [x] Cleanup / Refactor
-- [ ] GitHub Actions
+- [x] Basic GitHub Actions
 - [ ] Release package
 - [ ] More Examples / Expand example
