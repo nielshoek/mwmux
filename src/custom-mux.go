@@ -138,7 +138,7 @@ func getIdSpecifiers(path string) []int {
 	}
 
 	for i, part := range parts {
-		if part[0] == '{' && part[len(part)-1] == '}' {
+		if len(part) > 1 && part[0] == '{' && part[len(part)-1] == '}' {
 			result = append(result, i)
 		}
 	}
