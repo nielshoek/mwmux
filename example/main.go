@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 
-	cmux "github.com/MadNelis/go-middleware-lib/src"
+	cmux "github.com/nielshoek/go-middleware-lib/src"
 )
 
 func main() {
