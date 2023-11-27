@@ -27,6 +27,6 @@ func main() {
 ```
 
 ## Todo
-- [ ] Release on merge to main GitHub Action
+- [ ] Release on merge to main (GitHub Action)
 - [ ] Remove `example` folder from package
 - [ ] More Examples / Expand example
