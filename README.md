@@ -7,7 +7,7 @@ Small wrapper around Go's `http.ServeMux` to register middleware in the same way
 Run the following Go command to install the `mwmux` package:
 
 ```sh
-$ go get github.com/nielshoek/go-middleware-lib
+$ go get github.com/nielshoek/mwmux
 ```
 
 ### Running mwmux
