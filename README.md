@@ -2,9 +2,22 @@
 
 Small wrapper around Go's `http.ServeMux` to register middleware in the same way as in Express.js / ASP.NET (and probably several others).
 
+## Installation
+
+```
+$ go get github.com/nielshoek/go-middleware-lib
+```
+
 ## Example
 
 ```go
+import (
+	"fmt"
+	"net/http"
+
+	cmux "github.com/nielshoek/go-middleware-lib/src"
+)
+
 func main() {
 // 1. Create a CMux.
 	mux := cmux.NewCMux()
