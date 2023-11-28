@@ -13,7 +13,7 @@ func main() {
 
 	mux.Handle("/todos", &SomeHandler{})
 
-  // 2. Register a middleware.
+  // 2. Register a middleware
 	mux.Use("/", func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		fmt.Println("Middleware '/'")
 		next(w, r)
@@ -28,5 +28,4 @@ func main() {
 
 ## Todo
 - [ ] Release on merge to main (GitHub Action)
-- [ ] Remove `example` folder from package
 - [ ] More Examples / Expand example
