@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-const idPlaceholder = "<ID_PLACEHOLDER>"
+const idPlaceholder = "%"
 
 var MyMux *CMux
 
