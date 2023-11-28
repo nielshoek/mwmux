@@ -23,9 +23,9 @@ func main() {
 	})
 
 // 2b. Register a middleware which expects a part to be an identifier.
-// 	   Works like a wildcard, meaning that part of the URL path can be anything.
+//     Works like a wildcard, meaning that part of the URL path can be anything.
 //     Only the '{' and the '}' character are necessary. So e.g.
-//	   '/{}/' or '/{todoId}/' would work as well. Can be used multiple times.
+//     '/{}/' or '/{todoId}/' would work as well. Can be used multiple times.
 	mux.Use("/todos/{id}", func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		fmt.Println("Middleware '/todos/{id}'")
 		next(w, r)
