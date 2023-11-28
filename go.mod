@@ -1,6 +1,6 @@
-module github.com/nielshoek/go-middleware-lib
+module github.com/nielshoek/mwmux
 
-go 1.21.3
+go 1.21.4
 
 retract (
 	v0.2.1

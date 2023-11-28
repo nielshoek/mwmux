@@ -1,4 +1,4 @@
-package cmux
+package mwmux
 
 import (
 	"net/http"
