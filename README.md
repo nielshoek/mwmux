@@ -1,30 +1,30 @@
-# go-middleware-lib
+# mwmux
 
 Small wrapper around Go's `http.ServeMux` to register middleware in the same way as in Express.js / ASP.NET (and probably several others).
 
-### Getting go-middleware-lib
+### Getting mwmux
 
-Run the following Go command to install the `go-middleware-lib` package:
+Run the following Go command to install the `mwmux` package:
 
 ```sh
 $ go get github.com/nielshoek/go-middleware-lib
 ```
 
-### Running go-middleware-lib
+### Running mwmux
 
-First you need to import cmux package, then an example using a simple middleware and a middleware with a wildcard:
+First you need to import the mwmux package, then an example using a simple middleware and a middleware with a wildcard:
 
 ```go
 import (
 	"fmt"
 	"net/http"
 
-	cmux "github.com/nielshoek/go-middleware-lib/src"
+	"github.com/nielshoek/mwmux"
 )
 
 func main() {
 // 1. Create a CMux.
-	mux := cmux.NewCMux()
+	mux := mwmux.NewMWMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Home"))
@@ -53,6 +53,3 @@ func main() {
 	}
 }
 ```
-
-### Todo
-- [ ] Move cmux package to root folder

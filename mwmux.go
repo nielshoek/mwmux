@@ -9,41 +9,41 @@ import (
 
 const idPlaceholder = "%"
 
-var MyMux *CMux
+var MyMux *MWMux
 
-type CMux struct {
+type MWMux struct {
 	middlewareCount int
 	mux             *http.ServeMux
 	Middlewares     map[string]map[int]MiddlewareFunc
 }
 
 // Register a middleware on the mux
-func (cm *CMux) Use(path string, handler func(http.ResponseWriter, *http.Request, http.HandlerFunc)) {
-	if mws, ok := cm.Middlewares[path]; ok {
-		mws[cm.middlewareCount] = handler
+func (mm *MWMux) Use(path string, handler func(http.ResponseWriter, *http.Request, http.HandlerFunc)) {
+	if mws, ok := mm.Middlewares[path]; ok {
+		mws[mm.middlewareCount] = handler
 	} else {
-		cm.Middlewares[path] = map[int]MiddlewareFunc{}
-		cm.Middlewares[path][cm.middlewareCount] = handler
+		mm.Middlewares[path] = map[int]MiddlewareFunc{}
+		mm.Middlewares[path][mm.middlewareCount] = handler
 	}
-	cm.middlewareCount++
+	mm.middlewareCount++
 }
 
-func (cm *CMux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	runMiddlewarePipeline(writer, request, cm.mux.ServeHTTP)
+func (mm *MWMux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	runMiddlewarePipeline(writer, request, mm.mux.ServeHTTP)
 }
 
-func (cm *CMux) Handle(pattern string, handler http.Handler) {
+func (mm *MWMux) Handle(pattern string, handler http.Handler) {
 	handlerWrapper := &HandlerWrapper{
 		handler: handler,
 	}
-	cm.mux.Handle(pattern, handlerWrapper)
+	mm.mux.Handle(pattern, handlerWrapper)
 }
 
-func (cm *CMux) HandleFunc(p string, handler func(http.ResponseWriter, *http.Request)) {
+func (mm *MWMux) HandleFunc(p string, handler func(http.ResponseWriter, *http.Request)) {
 	funcWrapper := func(w http.ResponseWriter, r *http.Request) {
 		runMiddlewarePipeline(w, r, handler)
 	}
-	cm.mux.HandleFunc(p, funcWrapper)
+	mm.mux.HandleFunc(p, funcWrapper)
 }
 
 func runMiddlewarePipeline(writer http.ResponseWriter, request *http.Request, eh http.HandlerFunc) {
@@ -95,8 +95,8 @@ func getMiddlewaresForPath(requestPath string) map[int]MiddlewareFunc {
 	return middlewareHandlers
 }
 
-func NewCMux() *CMux {
-	MyMux = &CMux{
+func NewMWMux() *MWMux {
+	MyMux = &MWMux{
 		mux:         &http.ServeMux{},
 		Middlewares: map[string]map[int]MiddlewareFunc{},
 	}
@@ -110,8 +110,8 @@ func (handlerWrapper *HandlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.R
 	runMiddlewarePipeline(w, r, handlerWrapper.handler.ServeHTTP)
 }
 
-func (cm *CMux) ListenAndServe(addr string) error {
-	return http.ListenAndServe(addr, cm.mux)
+func (mm *MWMux) ListenAndServe(addr string) error {
+	return http.ListenAndServe(addr, mm.mux)
 }
 
 func getPaths(fullPath string) []string {
