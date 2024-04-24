@@ -9,51 +9,60 @@ import (
 
 const idPlaceholder = "%"
 
-var MyMux *MWMux
+var MMux *MWMux
 
 type MWMux struct {
 	middlewareCount int
-	mux             *http.ServeMux
+	httpServeMux    *http.ServeMux
 	Middlewares     map[string]map[int]MiddlewareFunc
 }
 
-// Register a middleware on the mux
-func (mm *MWMux) Use(path string, handler func(http.ResponseWriter, *http.Request, http.HandlerFunc)) {
-	if mws, ok := mm.Middlewares[path]; ok {
-		mws[mm.middlewareCount] = handler
+type MiddlewareFunc func(http.ResponseWriter, *http.Request, http.HandlerFunc)
+
+// Register a middleware on the MWMux
+func (mmux *MWMux) Use(
+	path string,
+	handler func(http.ResponseWriter, *http.Request, http.HandlerFunc),
+) {
+	if mws, ok := mmux.Middlewares[path]; ok {
+		mws[mmux.middlewareCount] = handler
 	} else {
-		mm.Middlewares[path] = map[int]MiddlewareFunc{}
-		mm.Middlewares[path][mm.middlewareCount] = handler
+		mmux.Middlewares[path] = map[int]MiddlewareFunc{}
+		mmux.Middlewares[path][mmux.middlewareCount] = handler
 	}
-	mm.middlewareCount++
+	mmux.middlewareCount++
 }
 
-func (mm *MWMux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	runMiddlewarePipeline(writer, request, mm.mux.ServeHTTP)
+func (mmux *MWMux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	runMiddlewarePipeline(writer, request, mmux.httpServeMux.ServeHTTP)
 }
 
-func (mm *MWMux) Handle(pattern string, handler http.Handler) {
+func (mmux *MWMux) Handle(pattern string, handler http.Handler) {
 	handlerWrapper := &HandlerWrapper{
 		handler: handler,
 	}
-	mm.mux.Handle(pattern, handlerWrapper)
+	mmux.httpServeMux.Handle(pattern, handlerWrapper)
 }
 
-func (mm *MWMux) HandleFunc(p string, handler func(http.ResponseWriter, *http.Request)) {
+func (mmux *MWMux) HandleFunc(p string, handler func(http.ResponseWriter, *http.Request)) {
 	funcWrapper := func(w http.ResponseWriter, r *http.Request) {
 		runMiddlewarePipeline(w, r, handler)
 	}
-	mm.mux.HandleFunc(p, funcWrapper)
+	mmux.httpServeMux.HandleFunc(p, funcWrapper)
 }
 
-func runMiddlewarePipeline(writer http.ResponseWriter, request *http.Request, eh http.HandlerFunc) {
+func runMiddlewarePipeline(
+	writer http.ResponseWriter,
+	request *http.Request,
+	endpointHandler http.HandlerFunc,
+) {
 	requestPath := request.URL.Path
 
 	middlewareHandlers := getMiddlewaresForPath(requestPath)
 
 	sortedMiddlewareHandlers := sortMiddlewares(middlewareHandlers)
 
-	firstMiddleware := createMiddlewarePipeline(sortedMiddlewareHandlers, eh)
+	firstMiddleware := createMiddlewarePipeline(sortedMiddlewareHandlers, endpointHandler)
 	firstMiddleware(writer, request)
 }
 
@@ -71,8 +80,8 @@ func sortMiddlewares(middlewareHandlers map[int]MiddlewareFunc) []MiddlewareFunc
 }
 
 func getMiddlewaresForPath(requestPath string) map[int]MiddlewareFunc {
-	middlewareHandlers := make(map[int]MiddlewareFunc, MyMux.middlewareCount)
-	for middlewarePath, handlers := range MyMux.Middlewares {
+	middlewareHandlers := make(map[int]MiddlewareFunc, MMux.middlewareCount)
+	for middlewarePath, handlers := range MMux.Middlewares {
 		idSpecifiers := getIdSpecifiers(middlewarePath)
 		if len(idSpecifiers) > 0 {
 			requestPath = removePartsFromPath(requestPath, idSpecifiers)
@@ -96,12 +105,12 @@ func getMiddlewaresForPath(requestPath string) map[int]MiddlewareFunc {
 }
 
 func NewMWMux() *MWMux {
-	MyMux = &MWMux{
-		mux:         &http.ServeMux{},
-		Middlewares: map[string]map[int]MiddlewareFunc{},
+	MMux = &MWMux{
+		httpServeMux: &http.ServeMux{},
+		Middlewares:  map[string]map[int]MiddlewareFunc{},
 	}
 
-	return MyMux
+	return MMux
 }
 
 type HandlerWrapper struct{ handler http.Handler }
@@ -110,8 +119,8 @@ func (handlerWrapper *HandlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.R
 	runMiddlewarePipeline(w, r, handlerWrapper.handler.ServeHTTP)
 }
 
-func (mm *MWMux) ListenAndServe(addr string) error {
-	return http.ListenAndServe(addr, mm.mux)
+func (mmux *MWMux) ListenAndServe(addr string) error {
+	return http.ListenAndServe(addr, mmux.httpServeMux)
 }
 
 func getPaths(fullPath string) []string {
@@ -126,8 +135,6 @@ func getPaths(fullPath string) []string {
 
 	return paths
 }
-
-type Void struct{}
 
 func getIdSpecifiers(path string) []int {
 	result := make([]int, 0)
@@ -166,8 +173,11 @@ func removePartsFromPath(path string, positions []int) string {
 	return result
 }
 
-func createMiddlewarePipeline(mwfuncs []MiddlewareFunc, endpHandler http.HandlerFunc) http.HandlerFunc {
-	next := endpHandler
+func createMiddlewarePipeline(
+	mwfuncs []MiddlewareFunc,
+	endpointHandler http.HandlerFunc,
+) http.HandlerFunc {
+	next := endpointHandler
 	for i := len(mwfuncs) - 1; i >= 0; i-- {
 		next = createFunc(mwfuncs[i], next)
 	}
@@ -179,5 +189,3 @@ func createFunc(mwfunc MiddlewareFunc, next http.HandlerFunc) http.HandlerFunc {
 		mwfunc(writer, request, next)
 	}
 }
-
-type MiddlewareFunc func(http.ResponseWriter, *http.Request, http.HandlerFunc)
