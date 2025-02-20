@@ -32,9 +32,9 @@ func main() {
 	})
 
 	// 2b. Register a middleware with an identifier.
-	// 	   An identifier works like a wildcard, so it matches that part with anything.
+	//     An identifier works like a wildcard, so it matches that part with anything.
 	//     Only the '{' and '}' character are necessary. So '/{}/' as well as '/{todoId}/' would
-	// 	   work. Can be used multiple times.
+	//     work. Can be used multiple times.
 	mux.Use("/todos/{id}", func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		fmt.Println("Middleware '/todos/{id}'")
 		next(w, r)
