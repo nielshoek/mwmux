@@ -15,15 +15,8 @@ $ go get github.com/nielshoek/mwmux
 First you need to import the mwmux package, then an example using a simple middleware and a middleware with a wildcard:
 
 ```go
-import (
-	"fmt"
-	"net/http"
-
-	"github.com/nielshoek/mwmux"
-)
-
 func main() {
-// 1. Create a CMux.
+	// 1. Create a MWMux.
 	mux := mwmux.NewMWMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -31,18 +24,17 @@ func main() {
 	})
 
 	mux.Handle("/todos", &MyHandler{})
-	mux.Handle("/todos/", &MyHandler{})
 
-// 2a. Register a middleware.
+	// 2a. Register a middleware.
 	mux.Use("/", func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		fmt.Println("Middleware '/'")
 		next(w, r)
 	})
 
-// 2b. Register a middleware which expects a part to be an identifier.
-//     Works like a wildcard, meaning that part of the URL path can be anything.
-//     Only the '{' and the '}' character are necessary. So e.g.
-//     '/{}/' or '/{todoId}/' would work as well. Can be used multiple times.
+	// 2b. Register a middleware with an identifier.
+	// 	   An identifier works like a wildcard, so it matches that part with anything.
+	//     Only the '{' and '}' character are necessary. So '/{}/' as well as '/{todoId}/' would
+	// 	   work. Can be used multiple times.
 	mux.Use("/todos/{id}", func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		fmt.Println("Middleware '/todos/{id}'")
 		next(w, r)
