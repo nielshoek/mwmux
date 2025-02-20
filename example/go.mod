@@ -1,5 +1,5 @@
 module example
 
-go 1.21.4
+go 1.22.2
 
-require github.com/nielshoek/go-middleware-lib v0.2.4
+require github.com/nielshoek/mwmux v0.5.1

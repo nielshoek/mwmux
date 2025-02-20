@@ -11,13 +11,13 @@ type Void struct{}
 
 func Test_BasicMiddleware_RunsOneHandlerFunc(t *testing.T) {
 	// Arrange
-	MMux = newTestMux()
+	mmux := newTestMux()
 
 	hitPaths := make(map[string]Void)
 
 	requestPath := "/a"
 	middlewarePath := "/a"
-	MMux.Use(middlewarePath, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+	mmux.Use(middlewarePath, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths[middlewarePath] = Void{}
 	})
 
@@ -27,7 +27,7 @@ func Test_BasicMiddleware_RunsOneHandlerFunc(t *testing.T) {
 	// Act
 	request, _ := http.NewRequest(http.MethodGet, requestPath, nil)
 	response := httptest.NewRecorder()
-	MMux.ServeHTTP(response, request)
+	mmux.ServeHTTP(response, request)
 
 	// Assert
 	if !reflect.DeepEqual(hitPaths, expectedHitPaths) {
@@ -37,17 +37,17 @@ func Test_BasicMiddleware_RunsOneHandlerFunc(t *testing.T) {
 
 func Test_BasicMiddleware_RunsOneHandlerFuncAndEndpointHandler(t *testing.T) {
 	// Arrange
-	MMux = newTestMux()
+	mmux := newTestMux()
 
 	hitPaths := make(map[string]Void)
 
-	MMux.HandleFunc("/a", func(w http.ResponseWriter, r *http.Request) {
+	mmux.HandleFunc("/a", func(w http.ResponseWriter, r *http.Request) {
 		hitPaths["endpoint"] = Void{}
 	})
 
 	requestPath := "/a"
 	middlewarePath := "/a"
-	MMux.Use(middlewarePath, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+	mmux.Use(middlewarePath, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths[middlewarePath] = Void{}
 		n(w, r)
 	})
@@ -60,7 +60,7 @@ func Test_BasicMiddleware_RunsOneHandlerFuncAndEndpointHandler(t *testing.T) {
 	request, _ := http.NewRequest(http.MethodGet, requestPath, nil)
 	response := httptest.NewRecorder()
 
-	MMux.ServeHTTP(response, request)
+	mmux.ServeHTTP(response, request)
 
 	// Assert
 	if !reflect.DeepEqual(hitPaths, expectedHitPaths) {
@@ -70,13 +70,13 @@ func Test_BasicMiddleware_RunsOneHandlerFuncAndEndpointHandler(t *testing.T) {
 
 func Test_BasicMiddleware_DoesNotRun(t *testing.T) {
 	// Arrange
-	MMux = newTestMux()
+	mmux := newTestMux()
 
 	hitPaths := make(map[string]Void)
 
 	requestPath := "/a"
 	middlewarePath := "/b"
-	MMux.Use(middlewarePath, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+	mmux.Use(middlewarePath, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths[middlewarePath] = Void{}
 	})
 
@@ -85,7 +85,7 @@ func Test_BasicMiddleware_DoesNotRun(t *testing.T) {
 	// Act
 	request, _ := http.NewRequest(http.MethodGet, requestPath, nil)
 	response := httptest.NewRecorder()
-	MMux.ServeHTTP(response, request)
+	mmux.ServeHTTP(response, request)
 
 	// Assert
 	if !reflect.DeepEqual(hitPaths, expectedHitPaths) {
@@ -95,18 +95,18 @@ func Test_BasicMiddleware_DoesNotRun(t *testing.T) {
 
 func Test_MiddlewareTwoLevelsDeep_RunsTwoHandlerFuncs(t *testing.T) {
 	// Arrange
-	MMux = newTestMux()
+	mmux := newTestMux()
 
 	hitPaths := make(map[string]Void)
 
 	requestPath := "/a/b"
 	middlewarePathOne := "/a"
-	MMux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+	mmux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths[middlewarePathOne] = Void{}
 		n(w, r)
 	})
 	middlewarePathTwo := "/a/b"
-	MMux.Use(middlewarePathTwo, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+	mmux.Use(middlewarePathTwo, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths[middlewarePathTwo] = Void{}
 		n(w, r)
 	})
@@ -118,7 +118,7 @@ func Test_MiddlewareTwoLevelsDeep_RunsTwoHandlerFuncs(t *testing.T) {
 	// Act
 	request, _ := http.NewRequest(http.MethodGet, requestPath, nil)
 	response := httptest.NewRecorder()
-	MMux.ServeHTTP(response, request)
+	mmux.ServeHTTP(response, request)
 
 	// Assert
 	if !reflect.DeepEqual(hitPaths, expectedHitPaths) {
@@ -128,22 +128,22 @@ func Test_MiddlewareTwoLevelsDeep_RunsTwoHandlerFuncs(t *testing.T) {
 
 func Test_MiddlewareTwoLevelsDeep_RunsThreeHandlerFuncs(t *testing.T) {
 	// Arrange
-	MMux = newTestMux()
+	mmux := newTestMux()
 
 	hitPaths := make(map[string]int)
 
 	requestPath := "/a/b"
 	middlewarePathOne := "/a"
-	MMux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+	mmux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths[middlewarePathOne] = 1
 		n(w, r)
 	})
 	middlewarePathTwo := "/a/b"
-	MMux.Use(middlewarePathTwo, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+	mmux.Use(middlewarePathTwo, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths[middlewarePathTwo] = 1
 		n(w, r)
 	})
-	MMux.Use(middlewarePathTwo, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+	mmux.Use(middlewarePathTwo, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths[middlewarePathTwo]++
 		n(w, r)
 	})
@@ -155,7 +155,7 @@ func Test_MiddlewareTwoLevelsDeep_RunsThreeHandlerFuncs(t *testing.T) {
 	// Act
 	request, _ := http.NewRequest(http.MethodGet, requestPath, nil)
 	response := httptest.NewRecorder()
-	MMux.ServeHTTP(response, request)
+	mmux.ServeHTTP(response, request)
 
 	// Assert
 	if !reflect.DeepEqual(hitPaths, expectedHitPaths) {
@@ -165,13 +165,13 @@ func Test_MiddlewareTwoLevelsDeep_RunsThreeHandlerFuncs(t *testing.T) {
 
 func Test_MiddlewareTwoLevelsDeepWithId_RunsHandlerFunc(t *testing.T) {
 	// Arrange
-	MMux = newTestMux()
+	mmux := newTestMux()
 
 	hitPaths := make(map[string]int)
 
 	requestPath := "/a/123/b"
 	middlewarePathOne := "/a/{id}/b"
-	MMux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+	mmux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths[middlewarePathOne] = 1
 	})
 
@@ -181,7 +181,7 @@ func Test_MiddlewareTwoLevelsDeepWithId_RunsHandlerFunc(t *testing.T) {
 	// Act
 	request, _ := http.NewRequest(http.MethodGet, requestPath, nil)
 	response := httptest.NewRecorder()
-	MMux.ServeHTTP(response, request)
+	mmux.ServeHTTP(response, request)
 
 	// Assert
 	if !reflect.DeepEqual(hitPaths, expectedHitPaths) {
@@ -191,17 +191,17 @@ func Test_MiddlewareTwoLevelsDeepWithId_RunsHandlerFunc(t *testing.T) {
 
 func Test_MiddlewareTwoLevelsDeepWithId_RunsOneHandlerFunc(t *testing.T) {
 	// Arrange
-	MMux = newTestMux()
+	mmux := newTestMux()
 
 	hitPaths := make(map[string]int)
 
 	requestPath := "/a/123/b/"
 	middlewarePathOne := "/a/{id}/b"
-	MMux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+	mmux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths[middlewarePathOne] = 1
 	})
 	middlewarePathTwo := "/a/{id}/b/{id}"
-	MMux.Use(middlewarePathTwo, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+	mmux.Use(middlewarePathTwo, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths[middlewarePathTwo] = 1
 	})
 
@@ -211,7 +211,7 @@ func Test_MiddlewareTwoLevelsDeepWithId_RunsOneHandlerFunc(t *testing.T) {
 	// Act
 	request, _ := http.NewRequest(http.MethodGet, requestPath, nil)
 	response := httptest.NewRecorder()
-	MMux.ServeHTTP(response, request)
+	mmux.ServeHTTP(response, request)
 
 	// Assert
 	if !reflect.DeepEqual(hitPaths, expectedHitPaths) {
@@ -221,18 +221,18 @@ func Test_MiddlewareTwoLevelsDeepWithId_RunsOneHandlerFunc(t *testing.T) {
 
 func Test_MiddlewareTwoLevelsDeepWithId_RunsTwoHandlerFuncs(t *testing.T) {
 	// Arrange
-	MMux = newTestMux()
+	mmux := newTestMux()
 
 	hitPaths := make(map[string]int)
 
 	requestPath := "/a/123/b/123/c/123"
 	middlewarePathOne := "/a/{id}/b"
-	MMux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+	mmux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths[middlewarePathOne] = 1
 		n(w, r)
 	})
 	middlewarePathTwo := "/a/{id}/b/{id}"
-	MMux.Use(middlewarePathTwo, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+	mmux.Use(middlewarePathTwo, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths[middlewarePathTwo] = 1
 		n(w, r)
 	})
@@ -244,7 +244,7 @@ func Test_MiddlewareTwoLevelsDeepWithId_RunsTwoHandlerFuncs(t *testing.T) {
 	// Act
 	request, _ := http.NewRequest(http.MethodGet, requestPath, nil)
 	response := httptest.NewRecorder()
-	MMux.ServeHTTP(response, request)
+	mmux.ServeHTTP(response, request)
 
 	// Assert
 	if !reflect.DeepEqual(hitPaths, expectedHitPaths) {
@@ -254,29 +254,29 @@ func Test_MiddlewareTwoLevelsDeepWithId_RunsTwoHandlerFuncs(t *testing.T) {
 
 func Test_Middleware_RunsFiveHandlerFuncsInOrder(t *testing.T) {
 	// Arrange
-	MMux = newTestMux()
+	mmux := newTestMux()
 
 	hitPaths := make([]uint8, 0)
 
 	requestPath := "/a"
 	middlewarePathOne := "/a"
-	MMux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+	mmux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths = append(hitPaths, 1)
 		n(w, r)
 	})
-	MMux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+	mmux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths = append(hitPaths, 2)
 		n(w, r)
 	})
-	MMux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+	mmux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths = append(hitPaths, 3)
 		n(w, r)
 	})
-	MMux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+	mmux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths = append(hitPaths, 4)
 		n(w, r)
 	})
-	MMux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+	mmux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths = append(hitPaths, 5)
 		n(w, r)
 	})
@@ -286,7 +286,7 @@ func Test_Middleware_RunsFiveHandlerFuncsInOrder(t *testing.T) {
 	// Act
 	request, _ := http.NewRequest(http.MethodGet, requestPath, nil)
 	response := httptest.NewRecorder()
-	MMux.ServeHTTP(response, request)
+	mmux.ServeHTTP(response, request)
 
 	// Assert
 	if !reflect.DeepEqual(hitPaths, expectedHitPaths) {
@@ -296,7 +296,7 @@ func Test_Middleware_RunsFiveHandlerFuncsInOrder(t *testing.T) {
 
 func Test_MiddlewareDifferentPaths_RunsFiveHandlerFuncsInOrder(t *testing.T) {
 	// Arrange
-	MMux = newTestMux()
+	mmux := newTestMux()
 
 	hitPaths := make([]uint8, 0)
 
@@ -304,19 +304,19 @@ func Test_MiddlewareDifferentPaths_RunsFiveHandlerFuncsInOrder(t *testing.T) {
 	middlewarePathOne := "/a"
 	middlewarePathTwo := "/a/b"
 	middlewarePathThree := "/a/b/c"
-	MMux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+	mmux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths = append(hitPaths, 1)
 		n(w, r)
 	})
-	MMux.Use(middlewarePathTwo, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+	mmux.Use(middlewarePathTwo, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths = append(hitPaths, 2)
 		n(w, r)
 	})
-	MMux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+	mmux.Use(middlewarePathOne, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths = append(hitPaths, 3)
 		n(w, r)
 	})
-	MMux.Use(middlewarePathThree, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+	mmux.Use(middlewarePathThree, func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		hitPaths = append(hitPaths, 4)
 		n(w, r)
 	})
@@ -326,7 +326,7 @@ func Test_MiddlewareDifferentPaths_RunsFiveHandlerFuncsInOrder(t *testing.T) {
 	// Act
 	request, _ := http.NewRequest(http.MethodGet, requestPath, nil)
 	response := httptest.NewRecorder()
-	MMux.ServeHTTP(response, request)
+	mmux.ServeHTTP(response, request)
 
 	// Assert
 	if !reflect.DeepEqual(hitPaths, expectedHitPaths) {
@@ -334,95 +334,10 @@ func Test_MiddlewareDifferentPaths_RunsFiveHandlerFuncsInOrder(t *testing.T) {
 	}
 }
 
-func Test_GetIdSpecifiers_ReturnsTwoPositions(t *testing.T) {
-	// Arrange
-	path := "/a/{id}/b/{id}"
-	expectedResult := []int{1, 3}
-
-	// Act
-	result := getIdSpecifiers(path)
-
-	// Assert
-	if !reflect.DeepEqual(result, expectedResult) {
-		t.Errorf("Expected result to equal %v, but found %v", expectedResult, result)
-	}
-}
-
-func Test_GetIdSpecifiers_ReturnsNoPositions(t *testing.T) {
-	// Arrange
-	path := "/a/b"
-	expectedResult := []int{}
-
-	// Act
-	result := getIdSpecifiers(path)
-
-	// Assert
-	if !reflect.DeepEqual(result, expectedResult) {
-		t.Errorf("Expected result to equal %v, but found %v", expectedResult, result)
-	}
-}
-
-func Test_GetIdSpecifiers_ReturnsOnePosition(t *testing.T) {
-	// Arrange
-	path := "/a/b/{id}/{{}}{"
-	expectedResult := []int{2}
-
-	// Act
-	result := getIdSpecifiers(path)
-
-	// Assert
-	if !reflect.DeepEqual(result, expectedResult) {
-		t.Errorf("Expected result to equal %v, but found %v", expectedResult, result)
-	}
-}
-
-func Test_RemovePartsFromPath_RemovesTwoParts(t *testing.T) {
-	// Arrange
-	path := "/a/b/c/d/"
-	expectedResult := "/a/" + string(idPlaceholder) + "/c/" + string(idPlaceholder)
-
-	// Act
-	result := removePartsFromPath(path, []int{1, 3})
-
-	// Assert
-	if result != expectedResult {
-		t.Errorf("Expected result to equal %v, but found %v", expectedResult, result)
-	}
-}
-
-func Test_RemovePartsFromPath_RemovesOne(t *testing.T) {
-	// Arrange
-	path := "/a/b/c/d/"
-	expectedResult := "/a/b/" + string(idPlaceholder) + "/d"
-
-	// Act
-	result := removePartsFromPath(path, []int{2})
-
-	// Assert
-	if result != expectedResult {
-		t.Errorf("Expected result to equal %v, but found %v", expectedResult, result)
-	}
-}
-
-func Test_RemovePartsFromPath_RemovesNothing(t *testing.T) {
-	// Arrange
-	path := "/a/b/c/d/"
-	expectedResult := "/a/b/c/d"
-
-	// Act
-	result := removePartsFromPath(path, []int{})
-
-	// Assert
-	if result != expectedResult {
-		t.Errorf("Expected result to equal %v, but found %v", expectedResult, result)
-	}
-}
-
 func newTestMux() *MWMux {
 	mwmux := &MWMux{
 		httpServeMux: &http.ServeMux{},
-		Middlewares:  map[string]map[int]MiddlewareFunc{},
+		Middlewares:  []Middleware{},
 	}
-
 	return mwmux
 }

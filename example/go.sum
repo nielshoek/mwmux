@@ -1,2 +1,4 @@
 github.com/nielshoek/go-middleware-lib v0.2.4 h1:Zue7WgnNqgKY8bjGDMsxfFzii7BpZhjBQcGKt0kA5G0=
 github.com/nielshoek/go-middleware-lib v0.2.4/go.mod h1:yo+i8/vOqdkn90xTqkFK/1DALKBYo10YOgAmw07y6uU=
+github.com/nielshoek/mwmux v0.5.1 h1:eUscFnQNBQyzljjsUuYXz0SjStavwZOCKMT+/3gQnm4=
+github.com/nielshoek/mwmux v0.5.1/go.mod h1:l2yyBU380rh9vXfghdl1R5OQ5zPkCIJ+Tynw/bKdsxE=

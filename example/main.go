@@ -8,19 +8,18 @@ import (
 	"strconv"
 	"strings"
 
-	cmux "github.com/nielshoek/go-middleware-lib/src"
+	"github.com/nielshoek/mwmux"
 )
 
 func main() {
-	// 1. Create a CMux.
-	mux := cmux.NewCMux()
+	// 1. Create a MWMux.
+	mux := mwmux.NewMWMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Home"))
 	})
 
 	mux.Handle("/todos", &MyHandler{})
-	mux.Handle("/todos/", &MyHandler{})
 
 	// 2a. Register a middleware.
 	mux.Use("/", func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
@@ -28,10 +27,10 @@ func main() {
 		next(w, r)
 	})
 
-	// 2b. Register a middleware which expects a part to be an identifier.
-	// 	   Works like a wildcard, meaning that part of the URL path can be anything.
-	//     Only the '{' and the '}' character are necessary. So e.g.
-	//	   '/{}/' or '/{todoId}/' would work as well. Can be used multiple times.
+	// 2b. Register a middleware with an identifier.
+	// 	   An identifier works like a wildcard, so it matches that part with anything.
+	//     Only the '{' and '}' character are necessary. So '/{}/' as well as '/{todoId}/' would
+	// 	   work. Can be used multiple times.
 	mux.Use("/todos/{id}", func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		fmt.Println("Middleware '/todos/{id}'")
 		next(w, r)
