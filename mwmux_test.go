@@ -379,7 +379,7 @@ func Test_GetIdSpecifiers_ReturnsOnePosition(t *testing.T) {
 func Test_RemovePartsFromPath_RemovesTwoParts(t *testing.T) {
 	// Arrange
 	path := "/a/b/c/d/"
-	expectedResult := "/a/" + idPlaceholder + "/c/" + idPlaceholder
+	expectedResult := "/a/" + string(idPlaceholder) + "/c/" + string(idPlaceholder)
 
 	// Act
 	result := removePartsFromPath(path, []int{1, 3})
@@ -393,7 +393,7 @@ func Test_RemovePartsFromPath_RemovesTwoParts(t *testing.T) {
 func Test_RemovePartsFromPath_RemovesOne(t *testing.T) {
 	// Arrange
 	path := "/a/b/c/d/"
-	expectedResult := "/a/b/" + idPlaceholder + "/d"
+	expectedResult := "/a/b/" + string(idPlaceholder) + "/d"
 
 	// Act
 	result := removePartsFromPath(path, []int{2})

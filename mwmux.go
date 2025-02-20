@@ -2,12 +2,11 @@ package mwmux
 
 import (
 	"net/http"
-	"regexp"
 	"slices"
 	"strings"
 )
 
-const idPlaceholder = "%"
+const idPlaceholder = ':'
 
 var MMux *MWMux
 
@@ -19,18 +18,37 @@ type MWMux struct {
 
 type MiddlewareFunc func(http.ResponseWriter, *http.Request, http.HandlerFunc)
 
-// Register a middleware on the MWMux
+// Register a middleware on the MWMux.
 func (mmux *MWMux) Use(
 	path string,
-	handler func(http.ResponseWriter, *http.Request, http.HandlerFunc),
+	handler MiddlewareFunc,
 ) {
-	if mws, ok := mmux.Middlewares[path]; ok {
-		mws[mmux.middlewareCount] = handler
-	} else {
-		mmux.Middlewares[path] = map[int]MiddlewareFunc{}
-		mmux.Middlewares[path][mmux.middlewareCount] = handler
+	cleanedPath := replaceIdsInPathWithPlaceholder(path)
+	if _, ok := mmux.Middlewares[cleanedPath]; !ok {
+		mmux.Middlewares[cleanedPath] = map[int]MiddlewareFunc{}
 	}
+	mmux.Middlewares[cleanedPath][mmux.middlewareCount] = handler
 	mmux.middlewareCount++
+}
+
+// Replaces identifiers ({id}) in the path with a placeholder.
+func replaceIdsInPathWithPlaceholder(path string) string {
+	var sb strings.Builder
+
+	for i := 0; i < len(path); i++ {
+		if path[i] == '{' {
+			sb.WriteByte(idPlaceholder)
+			closingBracketIndex := strings.Index(path[i:], "}")
+			if closingBracketIndex == -1 {
+				panic("Invalid path. No closing bracket found for opening bracket in path: " + path)
+			}
+			i += closingBracketIndex
+		} else {
+			sb.WriteByte(path[i])
+		}
+	}
+
+	return sb.String()
 }
 
 func (mmux *MWMux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
@@ -82,26 +100,41 @@ func sortMiddlewares(middlewareHandlers map[int]MiddlewareFunc) []MiddlewareFunc
 func getMiddlewaresForPath(requestPath string) map[int]MiddlewareFunc {
 	middlewareHandlers := make(map[int]MiddlewareFunc, MMux.middlewareCount)
 	for middlewarePath, handlers := range MMux.Middlewares {
-		idSpecifiers := getIdSpecifiers(middlewarePath)
-		if len(idSpecifiers) > 0 {
-			requestPath = removePartsFromPath(requestPath, idSpecifiers)
-			middlewarePath = removePartsFromPath(middlewarePath, idSpecifiers)
-		}
-		patternRgx := regexp.MustCompile(`^` + middlewarePath + `/*$`)
-
-		paths := getPaths(requestPath)
-		isMatch := false
-		for _, path := range paths {
-			isMatch = patternRgx.MatchString(path)
-			if isMatch {
-				for nr, middlewareHandler := range handlers {
-					middlewareHandlers[nr] = middlewareHandler
-				}
-				break
+		isMatch := requestPathMatchesMiddlewarePath(requestPath, middlewarePath)
+		if isMatch {
+			for nr, middlewareHandler := range handlers {
+				middlewareHandlers[nr] = middlewareHandler
 			}
 		}
 	}
 	return middlewareHandlers
+}
+
+func requestPathMatchesMiddlewarePath(requestPath string, middlewarePath string) bool {
+	if len(requestPath) < len(middlewarePath) {
+		return false
+	}
+	reqIdx := 0
+	mwIdx := 0
+
+	for reqIdx < len(requestPath) && mwIdx < len(middlewarePath) {
+		if middlewarePath[mwIdx] == idPlaceholder {
+			for reqIdx < len(requestPath) && requestPath[reqIdx] != '/' {
+				reqIdx++
+			}
+			mwIdx++
+		} else if requestPath[reqIdx] == middlewarePath[mwIdx] {
+			reqIdx++
+			mwIdx++
+		} else {
+			return false
+		}
+	}
+
+	if mwIdx != len(middlewarePath) {
+		return false
+	}
+	return true
 }
 
 func NewMWMux() *MWMux {
@@ -123,21 +156,8 @@ func (mmux *MWMux) ListenAndServe(addr string) error {
 	return http.ListenAndServe(addr, mmux.httpServeMux)
 }
 
-func getPaths(fullPath string) []string {
-	paths := []string{}
-	paths = append(paths, "/")
-	parts := strings.Split(fullPath, "/")[1:]
-	lastString := ""
-	for _, v := range parts {
-		lastString += "/" + v
-		paths = append(paths, lastString)
-	}
-
-	return paths
-}
-
 func getIdSpecifiers(path string) []int {
-	result := make([]int, 0)
+	result := []int{}
 	parts := strings.Split(path, "/")[1:]
 
 	if parts[len(parts)-1] == "" {
@@ -166,7 +186,7 @@ func removePartsFromPath(path string, positions []int) string {
 		if !isRemoved {
 			result += "/" + part
 		} else {
-			result += "/" + idPlaceholder
+			result += "/" + string(idPlaceholder)
 		}
 	}
 
