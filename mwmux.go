@@ -115,10 +115,7 @@ func requestPathMatchesMiddlewarePath(requestPath string, middlewarePath string)
 		}
 	}
 
-	if mwIdx != len(middlewarePath) {
-		return false
-	}
-	return true
+	return mwIdx == len(middlewarePath)
 }
 
 func NewMWMux() *MWMux {
