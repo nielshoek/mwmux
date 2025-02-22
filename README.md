@@ -10,7 +10,7 @@ Run the following Go command to install the `mwmux` package:
 $ go get github.com/nielshoek/mwmux
 ```
 
-### Running mwmux
+### Using mwmux
 
 First you need to import the mwmux package, then an example using a simple middleware and a middleware with a wildcard:
 
