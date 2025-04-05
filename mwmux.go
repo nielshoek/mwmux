@@ -60,7 +60,10 @@ func (mmux *MWMux) ServeHTTP(writer http.ResponseWriter, request *http.Request) 
 }
 
 func (mmux *MWMux) Handle(pattern string, handler http.Handler) {
-	mmux.httpServeMux.Handle(pattern, handler)
+	funcWrapper := func(w http.ResponseWriter, r *http.Request) {
+		mmux.runMiddlewarePipeline(w, r, handler.ServeHTTP)
+	}
+	mmux.httpServeMux.Handle(pattern, http.HandlerFunc(funcWrapper))
 }
 
 func (mmux *MWMux) HandleFunc(p string, handler func(http.ResponseWriter, *http.Request)) {
