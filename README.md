@@ -1,3 +1,6 @@
+> [!CAUTION]
+> This should not be used (for now).
+
 # mwmux
 
 Small wrapper around Go's `http.ServeMux` to register middleware in the same way as in Express.js / ASP.NET (and probably several others).
