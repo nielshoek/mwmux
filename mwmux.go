@@ -60,7 +60,7 @@ func (mmux *MWMux) ServeHTTP(writer http.ResponseWriter, request *http.Request) 
 }
 
 func (mmux *MWMux) Handle(pattern string, handler http.Handler) {
-	mmux.httpServeMux.Handle(pattern, mmux.httpServeMux)
+	mmux.httpServeMux.Handle(pattern, handler)
 }
 
 func (mmux *MWMux) HandleFunc(p string, handler func(http.ResponseWriter, *http.Request)) {
